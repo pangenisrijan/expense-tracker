@@ -15,6 +15,17 @@ frontend to a backend, and a backend to a relational database.
 - [ ] Filter by date range
 - [ ] Login (currently single-user)
 
+## Screenshots
+
+**Dashboard with expenses and chart:**
+![Dashboard](screenshots/dashboard.png)
+
+**Expenses added, showing running total:**
+![Expenses added](screenshots/expensesadded.png)
+
+**Add Expense form:**
+![Add Expense form](screenshots/addexpense.png)
+
 ## Tech stack
 - **Frontend:** HTML, CSS, JavaScript
 - **Backend:** PHP
