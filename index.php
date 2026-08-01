@@ -45,6 +45,28 @@ mysqli_data_seek($result, 0);
 // (not the filtered one) - otherwise you couldn't switch back to a
 // category you're not currently viewing.
 $cat_result = mysqli_query($conn, "SELECT id, name FROM categories");
+
+// === Data for the chart ===
+// We need one number per category: total spent in that category.
+// GROUP BY collapses many rows into one row per category, and SUM()
+// adds up the amount column within each group. This is a different
+// SQL skill than SELECT/WHERE - it's for AGGREGATING data, not just
+// filtering it.
+$chart_sql = "SELECT categories.name AS category_name, SUM(expenses.amount) AS total
+              FROM expenses
+              JOIN categories ON expenses.category_id = categories.id
+              GROUP BY categories.name";
+$chart_result = mysqli_query($conn, $chart_sql);
+
+// We build two plain PHP arrays - one for labels (category names),
+// one for values (totals) - then convert them to JSON so JavaScript
+// (which runs in the browser, not on the server) can read them.
+$chart_labels = [];
+$chart_values = [];
+while ($row = mysqli_fetch_assoc($chart_result)) {
+    $chart_labels[] = $row['category_name'];
+    $chart_values[] = $row['total'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -113,6 +135,46 @@ $cat_result = mysqli_query($conn, "SELECT id, name FROM categories");
         </table>
     <?php else: ?>
         <p>No expenses match this filter. <a href="index.php">Clear filter</a> or <a href="add_expense.php">add a new expense</a>.</p>
+    <?php endif; ?>
+
+    <?php if (count($chart_labels) > 0): ?>
+        <h2>Spending by Category</h2>
+        <!-- canvas is an HTML element made for drawing on with JavaScript/graphics -->
+        <div style="max-width: 500px;">
+            <canvas id="categoryChart"></canvas>
+        </div>
+
+        <!-- Loading Chart.js from a public CDN - a "CDN" is just a server that
+             hosts common libraries so you don't have to download/manage them
+             yourself. This <script> tag downloads the whole Chart.js library. -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            // PHP runs on the SERVER and finishes before the page even reaches
+            // your browser. JavaScript runs IN the browser, afterward. So to hand
+            // data from PHP to JavaScript, we print it as JSON right into the page -
+            // json_encode() converts a PHP array into a JS-readable array literal.
+            const labels = <?php echo json_encode($chart_labels); ?>;
+            const values = <?php echo json_encode($chart_values); ?>;
+
+            // This is standard Chart.js setup: grab the canvas, tell it what
+            // TYPE of chart (bar), and give it data + labels.
+            const ctx = document.getElementById('categoryChart');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total spent (NPR)',
+                        data: values,
+                        backgroundColor: '#1a4d2e'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } }
+                }
+            });
+        </script>
     <?php endif; ?>
 
 </body>
