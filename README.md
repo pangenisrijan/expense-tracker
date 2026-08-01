@@ -4,6 +4,27 @@ A web-based expense tracker built with PHP, MySQL, HTML, CSS, and JavaScript.
 Built as a mini-project to practice full-stack fundamentals: connecting a
 frontend to a backend, and a backend to a relational database.
 
+## CRUD Operations
+| Operation | File | SQL Used |
+|---|---|---|
+| **C**reate | `add_expense.php` | `INSERT` |
+| **R**ead | `index.php` | `SELECT` with `JOIN`, plus `GROUP BY` / `SUM()` for the chart |
+| **U**pdate | `edit_expense.php` | `UPDATE ... WHERE` |
+| **D**elete | `delete_expense.php` | `DELETE ... WHERE` |
+
+All database writes use **prepared statements** (parameterized queries) rather
+than raw string concatenation, to prevent SQL injection.
+
+## Database Design
+Relational schema with 3 tables and foreign key relationships:
+- `users` (id, name, email, password)
+- `categories` (id, name)
+- `expenses` (id, user_id, category_id, amount, description, expense_date)
+  — `user_id` and `category_id` are foreign keys referencing `users` and
+  `categories`, so each expense is linked to exactly one user and one category.
+
+See [`database/schema.sql`](database/schema.sql) for the full schema.
+
 ## Features
 - [x] Database schema (users, categories, expenses)
 - [x] PHP ↔ MySQL connection
