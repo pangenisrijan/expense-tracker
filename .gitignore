@@ -1,0 +1,7 @@
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Never commit real credentials if you later add a config file with passwords
+config.php
